@@ -1,0 +1,7 @@
+{
+    "value": "Json object",
+    "complexObject": {
+        "value": "Complex json object value"
+    },
+    "complexArray": ["First json array value", "Second json array value"]
+}

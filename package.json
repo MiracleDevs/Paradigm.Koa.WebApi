@@ -4,10 +4,10 @@
     "description": "A port of Paradigm.Express.WebApi to use koa as the internal server and router. The objective is still provide a clear architecture and patterns to work on webapis, allowing async methods, clear server-agnostic interfaces for controller and services, and include filters, which not only include the http context, but the routing context, with metadata about controllers and actions.",
     "main": "index.js",
     "scripts": {
-        "test": "jest",
-        "coverage": "jest --coverage",
-        "watch-test": "jest --watch",
-        "watch-coverage": "jest --coverage --watch",
+        "test": "jest --detectOpenHandles",
+        "coverage": "jest --coverage --detectOpenHandles",
+        "watch-test": "jest --watch --detectOpenHandles",
+        "watch-coverage": "jest --coverage --watch --detectOpenHandles",
         "build": "npm install && tsc --project . --incremental",
         "watch": "npm run build -- --watch",
         "build-publish": "npm run build && npm run copy-readme && npm run copy-package",
@@ -45,18 +45,25 @@
     "homepage": "https://github.com/MiracleDevs/Paradigm.Koa.WebApi#readme",
     "dependencies": {
         "@koa/router": "^10.1.1",
+        "@miracledevs/paradigm-web-di": "^1.0.3",
+        "dotenv": "^16.0.1",
         "koa": "^2.13.4",
+        "koa-bodyparser": "^4.3.0",
         "reflect-metadata": "^0.1.13"
     },
     "devDependencies": {
+        "@types/dotenv": "^8.2.0",
         "@types/jest": "^27.5.1",
-        "@types/koa-router": "^7.4.4",
+        "@types/koa__router": "^8.0.11",
+        "@types/koa-bodyparser": "^4.3.7",
+        "@types/supertest": "^2.0.12",
         "eslint": "^8.16.0",
         "eslint-config-prettier": "^8.5.0",
         "husky": "^8.0.1",
         "jest": "^28.1.0",
         "lint-staged": "^12.4.1",
         "prettier": "^2.6.2",
+        "supertest": "^6.2.3",
         "ts-jest": "^28.0.2",
         "typescript": "^4.6.4"
     }

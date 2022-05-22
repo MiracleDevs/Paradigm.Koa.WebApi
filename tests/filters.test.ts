@@ -325,7 +325,7 @@ describe("Filters", () => {
         const response = await request.get("/before-filter");
         expect(response.status).toBe(204);
         expect(OnlyBeforeFilter.called).toBe(true);
-        server.stop();
+        await server.stop();
     });
 
     it("should execute if only after filters are present", async () => {
@@ -337,7 +337,7 @@ describe("Filters", () => {
         const response = await request.get("/before-filter");
         expect(response.status).toBe(204);
         expect(OnlyAfterFilter.called).toBe(true);
-        server.stop();
+        await server.stop();
     });
 
     it("should notify error on the before method on a global filter", async () => {
@@ -367,7 +367,7 @@ describe("Filters", () => {
         expect(injector.resolve(LogControllerFilter).executedAfter).toBe(false);
         expect(injector.resolve(LogGlobalFilter).executedAfter).toBe(false);
 
-        server.stop();
+        await server.stop();
     });
 
     it("should notify error on the before method on a controller filter", async () => {
@@ -398,7 +398,7 @@ describe("Filters", () => {
         expect(injector.resolve(LogControllerFilter).executedAfter).toBe(false);
         expect(injector.resolve(LogGlobalFilter).executedAfter).toBe(false);
 
-        server.stop();
+        await server.stop();
     });
 
     it("should notify error on the before method on a action filter", async () => {
@@ -429,7 +429,7 @@ describe("Filters", () => {
         expect(injector.resolve(LogControllerFilter).executedAfter).toBe(false);
         expect(injector.resolve(LogGlobalFilter).executedAfter).toBe(false);
 
-        server.stop();
+        await server.stop();
     });
 
     it("should notify error on the action", async () => {
@@ -460,7 +460,7 @@ describe("Filters", () => {
         expect(injector.resolve(LogControllerFilter).executedAfter).toBe(false);
         expect(injector.resolve(LogGlobalFilter).executedAfter).toBe(false);
 
-        server.stop();
+        await server.stop();
     });
 
     it("should notify error on the after method on a action filter", async () => {
@@ -491,7 +491,7 @@ describe("Filters", () => {
         expect(injector.resolve(LogControllerFilter).executedAfter).toBe(false);
         expect(injector.resolve(LogGlobalFilter).executedAfter).toBe(false);
 
-        server.stop();
+        await server.stop();
     });
 
     it("should notify error on the after method on a action filter", async () => {
@@ -522,7 +522,7 @@ describe("Filters", () => {
         expect(injector.resolve(LogControllerFilter).executedAfter).toBe(false);
         expect(injector.resolve(LogGlobalFilter).executedAfter).toBe(false);
 
-        server.stop();
+        await server.stop();
     });
 
     it("should notify error on the after method on a action filter", async () => {
@@ -553,7 +553,7 @@ describe("Filters", () => {
         expect(injector.resolve(LogControllerFilter).executedAfter).toBe(false);
         expect(injector.resolve(LogGlobalFilter).executedAfter).toBe(false);
 
-        server.stop();
+        await server.stop();
     });
 
     it("should respect execution order", async () => {
@@ -567,6 +567,6 @@ describe("Filters", () => {
         const response = await request.get("/respect-execution-order");
         expect(ExecutionOrder.order).toEqual([1, 2, 3, 4, 4, 3, 2, 1]);
         expect(ExecutionOrder.index).toBe(1);
-        server.stop();
+        await server.stop();
     });
 });

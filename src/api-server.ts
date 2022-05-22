@@ -89,8 +89,13 @@ export class ApiServer {
         this.listen();
     }
 
-    public stop(): void {
-        this._httpServer?.close();
+    public async stop(): Promise<void> {
+        return new Promise((resolve, reject) => {
+            this.httpServer?.close(error => {
+                if (error) reject(error);
+                else resolve();
+            });
+        });
     }
 
     protected configureApplication(): void {

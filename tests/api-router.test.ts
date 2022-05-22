@@ -191,7 +191,7 @@ describe("API Router", () => {
         expect(RoutingController.var2).toBe("hello");
         expect(RoutingController.var3).toBe(true);
         expect(RoutingController.var4).not.toBeNull();
-        server.stop();
+        await server.stop();
     });
 
     it("should map body object to parameter", async () => {
@@ -210,7 +210,7 @@ describe("API Router", () => {
         expect(RoutingController.object.value).toBe("a value");
         expect(RoutingController.object.name).toBe("a name");
         expect(RoutingController.object.array).toHaveLength(3);
-        server.stop();
+        await server.stop();
     });
 
     it("should return an object", async () => {
@@ -228,7 +228,7 @@ describe("API Router", () => {
         expect(result.name).toBe("a name");
         expect(result.array).toHaveLength(3);
 
-        server.stop();
+        await server.stop();
     });
 
     it("should allow a method to fail", async () => {
@@ -239,7 +239,7 @@ describe("API Router", () => {
         const response = await request.get("/routing/failing");
         expect(response.status).toBe(500);
         expect(response.text).toBe("This is an error");
-        server.stop();
+        await server.stop();
     });
 
     it("should call all the filters", async () => {
@@ -258,7 +258,7 @@ describe("API Router", () => {
         expect(RoutingController.var3).toBe(true);
         expect(RoutingController.var4).not.toBeNull();
         expect(RoutingFilter.afterIndex).toBe(3);
-        server.stop();
+        await server.stop();
     });
 
     it("should fail if a method does not exist", async () => {
@@ -272,7 +272,7 @@ describe("API Router", () => {
         const response = await request.get("/routing/removable");
         expect(response.status).toBe(500);
         expect(response.text).toBe("The method or action 'removableAction' does not exist in 'RoutingController'.");
-        server.stop();
+        await server.stop();
 
         RoutingController.prototype.removableAction = method;
     });
@@ -285,7 +285,7 @@ describe("API Router", () => {
         const response = await request.get("/routing/finishing");
         expect(response.status).toBe(200);
         expect(response.text).toBe("finished");
-        server.stop();
+        await server.stop();
     });
 
     it("should execute a get method", async () => {
@@ -295,7 +295,7 @@ describe("API Router", () => {
         const request = supertest(server.httpServer);
         const response = await request.get("/routing");
         expect(response.status).toBe(204);
-        server.stop();
+        await server.stop();
     });
 
     it("should execute a post method", async () => {
@@ -305,7 +305,7 @@ describe("API Router", () => {
         const request = supertest(server.httpServer);
         const response = await request.post("/routing");
         expect(response.status).toBe(204);
-        server.stop();
+        await server.stop();
     });
 
     it("should execute a put method", async () => {
@@ -315,7 +315,7 @@ describe("API Router", () => {
         const request = supertest(server.httpServer);
         const response = await request.put("/routing");
         expect(response.status).toBe(204);
-        server.stop();
+        await server.stop();
     });
 
     it("should execute a delete method", async () => {
@@ -325,7 +325,7 @@ describe("API Router", () => {
         const request = supertest(server.httpServer);
         const response = await request.delete("/routing");
         expect(response.status).toBe(204);
-        server.stop();
+        await server.stop();
     });
 
     it("should fail if parameter type is not recognized", async () => {
@@ -336,7 +336,7 @@ describe("API Router", () => {
         const response = await request.get("/routing/wrong-param/1");
         expect(response.status).toBe(500);
         expect(response.text).toBe("The parameter 'param' is of type 'Object'. Only Number, String, Date or Boolean are allowed for route or query string parameters.");
-        server.stop();
+        await server.stop();
     });
 
     it("should execute an action from a controller without route", async () => {
@@ -346,7 +346,7 @@ describe("API Router", () => {
         const response = await request.get("/");
         expect(response.status).toBe(204);
         expect(EmptyRouteController.executed).toBe(true);
-        server.stop();
+        await server.stop();
     });
 
     it("should execute an action from a controller that ends with a /.", async () => {
@@ -356,7 +356,7 @@ describe("API Router", () => {
         const response = await request.get("/end/action");
         expect(response.status).toBe(204);
         expect(EndWithBarController.executed).toBe(true);
-        server.stop();
+        await server.stop();
     });
 
     it("should convert all types of boolean to be true", async () => {
@@ -368,7 +368,7 @@ describe("API Router", () => {
         expect(BooleanParamController.ptrue).toBeTruthy();
         expect(BooleanParamController.pyes).toBeTruthy();
         expect(BooleanParamController.p1).toBeTruthy();
-        server.stop();
+        await server.stop();
     });
 
     it("should convert all types of boolean to be false", async () => {
@@ -380,6 +380,6 @@ describe("API Router", () => {
         expect(BooleanParamController.ptrue).toBeFalsy();
         expect(BooleanParamController.pyes).toBeFalsy();
         expect(BooleanParamController.p1).toBeFalsy();
-        server.stop();
+        await server.stop();
     });
 });

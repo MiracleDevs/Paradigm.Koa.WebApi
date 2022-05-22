@@ -28,14 +28,14 @@ describe("Api Server", () => {
 
     it("should instantiate the api server", () => expect(new Server()).not.toBeNull());
 
-    it("should start and stop the server", () => {
+    it("should start and stop the server", async () => {
         const server = new Server();
         expect(() => server.start()).not.toThrowError();
         expect(server.configured).toBeTruthy();
         expect(server.koaApplication).not.toBeNull();
         expect(server.httpServer).not.toBeNull();
         expect(server.routing).not.toBeNull();
-        expect(() => server.stop()).not.toThrowError();
+        await expect(async () => await server.stop()).not.toThrowError();
     });
 
     it("should fail if try to access server before starting", () => {

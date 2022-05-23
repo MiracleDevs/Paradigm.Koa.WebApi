@@ -55,22 +55,6 @@ describe("Filters", () => {
         }
     }
 
-    /*@Injectable()
-    class BreakBeforeFilter implements IFilter {
-        beforeExecute(httpContext: HttpContext, routingContext: RoutingContext): void {
-            httpContext.status = 200;
-            httpContext.body = "closed before";
-        }
-    }
-
-    @Injectable()
-    class BreakAfterFilter implements IFilter {
-        afterExecute(httpContext: HttpContext, routingContext: RoutingContext): void {
-            httpContext.status = 200;
-            httpContext.body = "closed after";
-        }
-    }*/
-
     @Injectable({ lifeTime: DependencyLifeTime.Singleton })
     class LogGlobalFilter implements IFilter {
         executedBefore: boolean = false;
@@ -157,81 +141,6 @@ describe("Filters", () => {
         @Action({ filters: [OnlyAfterFilter] })
         get(): void {}
     }
-
-    /*@Controller({ route: "break-before-global-filter" })
-    class BreakBeforeGlobalController {
-        @Action()
-        get(): void {}
-    }
-
-    @Controller({ route: "break-before-filter", filters: [BreakBeforeFilter] })
-    class BreakBeforeController {
-        @Action()
-        get(): void {}
-    }
-
-    @Controller({ route: "break-before-action-filter" })
-    class BreakBeforeActionController {
-        @Action({ filters: [BreakBeforeFilter] })
-        get(): void {}
-    }
-
-    @Controller({ route: "break-after-global-filter" })
-    class BreakAfterGlobalController {
-        @Action()
-        get(): void {}
-    }
-
-    @Controller({ route: "break-after-filter", filters: [BreakAfterFilter] })
-    class BreakAfterController {
-        @Action()
-        get(): void {}
-    }
-
-    @Controller({ route: "break-after-action-filter" })
-    class BreakAfterActionController {
-        @Action({ filters: [BreakAfterFilter] })
-        get(): void {}
-    }
-
-    @Controller({ route: "ignore-break-before-global-filter", filters: [LogControllerFilter] })
-    class IgnoreBreakBeforeGlobalController {
-        @Action({ filters: [LogActionFilter] })
-        get(): void {}
-    }
-
-    @Controller({ route: "ignore-break-before-controller-filter", filters: [BreakBeforeFilter] })
-    class IgnoreBreakBeforeControllerController {
-        @Action({ filters: [LogActionFilter] })
-        get(): void {}
-    }
-
-    @Controller({ route: "ignore-break-before-action-filter", filters: [LogControllerFilter] })
-    class IgnoreBreakBeforeActionController {
-        @Action({ filters: [BreakBeforeFilter, LogActionFilter] })
-        get(): void {}
-    }
-
-    @Controller({ route: "ignore-break-on-action-filter", filters: [LogControllerFilter] })
-    class IgnoreBreakOnActionController {
-        @Action({ filters: [LogActionFilter] })
-        get(httpContext: HttpContext): void {
-            httpContext.status = 200;
-            httpContext.body = "closed on action";
-        }
-    }
-
-    @Controller({ route: "ignore-break-on-after-action-filter", filters: [LogControllerFilter] })
-    class IgnoreBreakOnAfterActionController {
-        @Action({ filters: [BreakAfterFilter] })
-        get(): void {}
-    }
-
-    @Controller({ route: "ignore-break-on-after-controller-filter", filters: [BreakAfterFilter] })
-    class IgnoreBreakOnAfterControllerController {
-        @Action()
-        get(): void {}
-    }*/
 
     @Controller({ route: "throw-on-before-global-filter", filters: [LogControllerFilter] })
     class ThrowOnBeforeGlobalController {

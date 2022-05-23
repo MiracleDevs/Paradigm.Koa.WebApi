@@ -127,6 +127,12 @@ describe("Filters", () => {
     @Injectable({ lifeTime: DependencyLifeTime.Singleton })
     class SecondCounterActionFilter extends CounterGlobalFilter {}
 
+    class NotDecoratedFilter implements IFilter {
+        beforeExecute(): void {
+            throw Error("Shouldn't execute");
+        }
+    }
+
     ////////////////////////////////////////////////////////////////
     // Controllers
     ////////////////////////////////////////////////////////////////
@@ -476,6 +482,17 @@ describe("Filters", () => {
         const response = await request.get("/respect-execution-order");
         expect(ExecutionOrder.order).toEqual([1, 2, 3, 4, 4, 3, 2, 1]);
         expect(ExecutionOrder.index).toBe(1);
+        await server.stop();
+    });
+
+    it("should fail with a comprehensive message if filter is not decorated for injection", async () => {
+        const server = new MockServer();
+        server.start();
+        server.routing.registerGlobalFilters([NotDecoratedFilter]);
+        const request = supertest(server.httpServer);
+        const response = await request.get("/respect-execution-order");
+        expect(response.status).toBe(500);
+        expect(response.text).toBe("Couldn't instantiate the type NotDecoratedFilter.\n - The type NotDecoratedFilter is not registered.");
         await server.stop();
     });
 });

@@ -1,5 +1,4 @@
 import Router from "@koa/router";
-import Koa from "koa";
 import { HttpContext } from "./shared/http-context";
 import { HttpMethod } from "./shared/http-method";
 import { IFilter } from "./filters/filter.interface";
@@ -10,10 +9,11 @@ import { ActionType } from "./decorators/action-type";
 import { ActionTypeCollection } from "./decorators/action-type-collection";
 import { RouteParameterType } from "./decorators/action-url";
 import { ActionMethod } from "./shared/action-method";
-import { DependencyContainer, ObjectType, DependencyCollection } from "@miracledevs/paradigm-web-di";
+import { DependencyContainer, ObjectType } from "@miracledevs/paradigm-web-di";
 import { getObjectTypeName } from "@miracledevs/paradigm-web-di/object-type";
 import { RoutingContext } from "./shared/routing-context";
 import { ApiServer } from "./api-server";
+import { ResponseError } from "./Errors/response-error";
 
 export class ApiRouter {
     public static readonly ThreadScope = "thread";
@@ -30,8 +30,6 @@ export class ApiRouter {
 
     private readonly _globalFilters: ObjectType<IFilter>[];
 
-    private _ignoreClosedResponseOnFilters: boolean;
-
     constructor(server: ApiServer) {
         this._server = server;
         this._logger = server.logger;
@@ -39,11 +37,6 @@ export class ApiRouter {
         this._globalFilters = [];
         this._mainRouter = new Router();
         this._routers = new Map<string, Router>();
-        this._ignoreClosedResponseOnFilters = false;
-    }
-
-    public ignoreClosedResponseOnFilters(): void {
-        this._ignoreClosedResponseOnFilters = true;
     }
 
     public registerGlobalFilter(filter: ObjectType<IFilter>): void {
@@ -96,16 +89,18 @@ export class ApiRouter {
     }
 
     private async callAction(httpContext: HttpContext, routingContext: RoutingContext): Promise<void> {
-        // create a new scoped injector
-        const scopedDependencyContainer = this._dependencyContainer.createScopedInjector(ApiRouter.ThreadScope);
-
-        // join all the filters.
-        const filters = this._globalFilters.concat(routingContext.controllerType.descriptor.filters ?? [], routingContext.actionType.descriptor.filters ?? []);
-
-        // resolve the filter instances
-        const filterInstances = filters.map(x => scopedDependencyContainer.resolve(x) as IFilter);
+        let filterInstances: IFilter[] = [];
 
         try {
+            // create a new scoped injector
+            const scopedDependencyContainer = this._dependencyContainer.createScopedInjector(ApiRouter.ThreadScope);
+
+            // join all the filters.
+            const filters = this._globalFilters.concat(routingContext.controllerType.descriptor.filters ?? [], routingContext.actionType.descriptor.filters ?? []);
+
+            // resolve the filter instances
+            filterInstances = filters.map(x => scopedDependencyContainer.resolve(x) as IFilter);
+
             this._logger.debug(`Request received '${httpContext.request.url}'`);
 
             // check if the response is still alive.
@@ -149,7 +144,7 @@ export class ApiRouter {
             });
 
             // close with error.
-            httpContext.status = 500;
+            httpContext.status = error instanceof ResponseError ? error.status : 500;
             httpContext.body = error.message;
         }
     }
@@ -239,8 +234,6 @@ export class ApiRouter {
         if (!filterInstances || filterInstances.length === 0) return;
 
         for (const filterInstance of filterInstances) {
-            if (httpContext.closed && !this._ignoreClosedResponseOnFilters) break;
-
             await action(filterInstance);
         }
     }

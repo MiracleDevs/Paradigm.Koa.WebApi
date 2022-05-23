@@ -158,7 +158,7 @@ Each controller is a class that contains a set of actions, that will be routed o
 
 ### Filters
 
-The last important group of elements you need to know, are the filters. Filters can be attached to all the controllers, to all the actions inside a controller, or to a specific action. Filters act like a middleware that happens after the MVC routing was resolved. With them you can execute code before and after an action is called.
+The last important group of elements you need to know, are the filters. Filters can be attached to the application, to a controller or to a specific action. Filters act like a middleware that happens after the MVC routing was resolved. With them you can execute code before and after an action is called.
 Suppose you want to filter requests that need to be authenticated, and not allow unauthenticated users to execute certain actions or controllers:
 
 ```typescript
@@ -166,17 +166,12 @@ Suppose you want to filter requests that need to be authenticated, and not allow
 export class SecurityFilter implements IFilter {
     constructor(private readonly configurationBuilder: ConfigurationBuilder, private readonly loggedUser: LoggedUser) {}
 
-    beforeExecute(httpContext: HttpContext, routingContext: RoutingContext): void {
+    beforeExecute(httpContext: HttpContext): void {
         const headerAuth = httpContext.request.headers["x-auth"];
         const configuration = this.configurationBuilder.build(FooConfiguration);
 
-        if (headerAuth === configuration.adminSecret) {
-            this.loggedUser.role = Roles.Admin;
-            return;
-        }
-
-        httpContext.status = 401;
-        httpContext.body = "The user is not authenticated.";
+        if (headerAuth !== configuration.adminSecret) throw new ResponseError(401, "The user is not authenticated.");
+        this.loggedUser.role = Roles.Admin;
     }
 }
 ```
@@ -189,9 +184,23 @@ This filter is asking to be executed before the actual action. There is three ty
 
 > You can execute all of them as sync or async methods as well. The type of return can be `void` or `Promise<void>`.
 
-And before anything happens, the filter looks for a special request header, and evaluates if the header value is equal to a given client secret. If it is, sets up the logged user role, and if it's not, finishes the request and return a 401. By setting the status and sending a response, we are closing the context, and mvc routing will not execute any more filters or actions. Instead of checking a client secret, you could look inside a database, or check with third party o-auth service, the subjacent idea is the same.
+And before anything happens, the filter looks for a special request header, and evaluates if the header value is equal to a given client secret. If it is, sets up the logged user role, and if it's not, finishes the request and return a 401. By throwing a `ResponseError` the `ApiRouter` will intercept that type of error and provide the right status and response body, and fire the `onError` methods if required. You can create your own errors by inheriting the `ResponseError` class:
 
-> **Important Note**: Since v1.2.0 there's a method called `ApiRouter.ignoreClosedResponseOnFilters()` that can be invoked from your server class by calling `this.routing.ignoreClosedResponseOnFilters()` that will change the default behavior, and execute filter events even if the HttpContext has been closed. This can be helpful if you need to execute an action even if the response has been finished, like release a connection object to the connection bool. If you need to do something like this, we recommend to also override the `onError` method in case the request fails, because in case of failure the afterExecute won't be executed.
+```typescript
+class AuthenticationError extends ResponseError {
+    constructor() {
+        super(401, "The user is not authenticated");
+    }
+}
+
+class MissingTokenError extends ResponseError {
+    constructor() {
+        super(400, "The user did not provide an authentication token");
+    }
+}
+```
+
+> **Important Note**: Koa does not closes the response like express, so even if you write the status code and the body, filters and actions will be executed in the right order. If you want to prevent that from happening, you can use ResponseErrors or check the body or status by yourself. This is a big departure from Paradigm.Express.WebApi.
 
 Now, how can we configure this filter on a real case scenario? let's take the `ProductController` example, and see how we can configure. In our first scenario, let's suppose that our product catalog is available to everyone, but only collaborators can add, modify or remove products from the catalog. In that case, we need to block only some actions:
 
@@ -222,7 +231,7 @@ export class ProductController {
 }
 ```
 
-Take a look to the `post` and `delete` actions. We added the `filters: [ SecurityFilter ]` parameter, and inside it, we included our filter. By doing so, we are effectively telling the router to execute the filter for that particular action. You may have noticed that filters is an array, you can setup multiple filters per action.
+Take a look to the `post` and `delete` actions. We added the `filters: [ SecurityFilter ]` parameter, and inside it, we included our filter. By doing so, we are effectively telling the router to execute the filter for that particular action. You may have noticed that `filters` is an array, you can setup multiple filters per action.
 
 Now lets say on our second case scenario, our product catalog is part of an ERP type system, and it's only accessible to logged users and not guests. In that case, adding the filter to every action is tedious. But trouble not, there is an easier way:
 
@@ -291,6 +300,8 @@ Another minor thing to mention, is that the framework resolves filters using DI.
 
 Last but not least, is good to understand the order in which the filters are executed, mostly if you end up having the 3 categories at the same time:
 
+![api order](./images/filter-order-1.png)
+
 1. `before` execute: `global` filter
 2. `before` execute: `controller` filter
 3. `before` execute: `action` filter
@@ -301,10 +312,13 @@ Last but not least, is good to understand the order in which the filters are exe
 
 The order reversion not only affects these categories, but also filters inside each step. If you have two filters in the global scope, these will be executed in order first, and then in reverse order: I.E.:
 
+![api order](./images/filter-order-2.png)
+
 1. Global (before execute): Filter1
 2. Global (before execute): Filter2
-3. Global (after execute): Filter2
-4. Global (after execute): Filter1
+3. the action is executed.
+4. Global (after execute): Filter2
+5. Global (after execute): Filter1
 
 ## Version History
 

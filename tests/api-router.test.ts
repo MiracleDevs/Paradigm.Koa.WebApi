@@ -157,6 +157,34 @@ describe("API Router", () => {
         }
     }
 
+    @Controller({ route: "error" })
+    class ErrorController {
+        @Action({ route: "error", method: HttpMethod.GET })
+        error(): void {
+            throw new Error("Error class");
+        }
+
+        @Action({ route: "custom-error", method: HttpMethod.GET })
+        customError(): void {
+            throw { message: "Custom error" };
+        }
+
+        @Action({ route: "custom-object", method: HttpMethod.GET })
+        customObject(): void {
+            throw {
+                text: "Custom object",
+                toString: function () {
+                    return this.text;
+                },
+            };
+        }
+
+        @Action({ route: "unknown-error", method: HttpMethod.GET })
+        unknownError(): void {
+            throw undefined;
+        }
+    }
+
     class MockServer extends ApiServer {
         constructor() {
             super(new ConfigurationBuilder(), DependencyCollection.globalCollection.buildContainer(), new Logger());
@@ -371,15 +399,27 @@ describe("API Router", () => {
         await server.stop();
     });
 
-    it("should convert all types of boolean to be false", async () => {
+    it("should catch errors", async () => {
         const server = new MockServer();
         server.start();
         const request = supertest(server.httpServer);
-        const response = await request.get("/boolean/false/no/0");
-        expect(response.status).toBe(204);
-        expect(BooleanParamController.ptrue).toBeFalsy();
-        expect(BooleanParamController.pyes).toBeFalsy();
-        expect(BooleanParamController.p1).toBeFalsy();
+
+        let response = await request.get("/error/error");
+        expect(response.status).toBe(500);
+        expect(response.text).toBe("Error class");
+
+        response = await request.get("/error/custom-error");
+        expect(response.status).toBe(500);
+        expect(response.text).toBe("Custom error");
+
+        response = await request.get("/error/custom-object");
+        expect(response.status).toBe(500);
+        expect(response.text).toBe("Custom object");
+
+        response = await request.get("/error/unknown-error");
+        expect(response.status).toBe(500);
+        expect(response.text).toBe("Unknown error");
+
         await server.stop();
     });
 });

@@ -54,7 +54,6 @@ export class ApiRouter {
             for (const actionType of ActionTypeCollection.globalInstance.getForController(controllerType.type.name)) {
                 const routingContext = new RoutingContext(controllerType, actionType);
                 const route = this.mergeRoute(routingContext);
-                // const { router } = this.getRouter(controllerType);
                 const router = this._mainRouter;
                 const method = this.getMethod(actionType, router);
 
@@ -67,25 +66,10 @@ export class ApiRouter {
             // routes respond with a 404 if we use nested routers.
             // https://github.com/ZijianHe/koa-router/issues/244
             ////////////////////////////////////////////////////////////////////////////////
-            // const { router, controllerRoute } = this.getRouter(controllerType);
-            // this._mainRouter.use(controllerRoute, router.routes(), router.allowedMethods());
-            ////////////////////////////////////////////////////////////////////////////////
         }
 
         this._server.koaApplication.use(this._mainRouter.routes());
         this._server.koaApplication.use(this._mainRouter.allowedMethods());
-    }
-
-    private getRouter(controllerType: ControllerType): { router: Router; controllerRoute: string } {
-        let controllerRoute = controllerType.descriptor.route || "";
-        if (controllerRoute.endsWith("/")) controllerRoute = controllerRoute.substr(0, controllerRoute.length - 1);
-
-        let router = this._routers.get(controllerRoute);
-        if (router) return { router, controllerRoute };
-
-        router = new Router() as Router;
-        this._routers.set(controllerRoute, router);
-        return { router, controllerRoute };
     }
 
     private async callAction(httpContext: HttpContext, routingContext: RoutingContext): Promise<void> {
@@ -102,9 +86,6 @@ export class ApiRouter {
             filterInstances = filters.map(x => scopedDependencyContainer.resolve(x) as IFilter);
 
             this._logger.debug(`Request received '${httpContext.request.url}'`);
-
-            // check if the response is still alive.
-            this.checkResponse(httpContext, routingContext);
 
             // try to instantiate the controller.
             const controllerInstance = this.createControllerInstance(routingContext, scopedDependencyContainer);
@@ -150,23 +131,10 @@ export class ApiRouter {
     }
 
     private getError(error: unknown): Error {
-        if (error instanceof Error) return error;
-        else if ((error as any).message) {
-            return new Error((error as any).message);
-        } else if ((error as any).toString) {
-            return new Error((error as any).toString());
-        } else {
-            return new Error("Unknown Error");
-        }
-    }
-
-    private checkResponse(httpContext: HttpContext, routingContext: RoutingContext): void {
-        if (httpContext.closed) {
-            this._logger.debug(`The response is already closed, the action '${routingContext}' won't be called.`);
-            return;
-        }
-
-        this._logger.debug(`The action '${routingContext}' will be executed.`);
+        if (!error) return new Error("Unknown error");
+        else if (error instanceof Error) return error;
+        else if ((error as any).message) return new Error((error as any).message);
+        else return new Error((error as any).toString());
     }
 
     private createControllerInstance(routingContext: RoutingContext, dependencyContainer: DependencyContainer): any {

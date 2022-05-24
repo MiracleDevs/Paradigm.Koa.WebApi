@@ -352,18 +352,6 @@ To watch-test the solution:
 $ npm run watch-test
 ```
 
-To see the test coverage:
-
-```shell
-$ npm run coverage
-```
-
-To watch-coverage the solution:
-
-```shell
-$ npm run watch-coverage
-```
-
 ## Package Configuration
 
 This Solution is configured to use Prettier, eslint and to format the source code before commit after a stage operation. The CI scripts also checks format when running the actions.

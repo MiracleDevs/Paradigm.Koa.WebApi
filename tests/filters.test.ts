@@ -8,6 +8,8 @@ import { Logger } from "../src/logging/logger";
 import supertest from "supertest";
 import { ApiServer } from "../src/api-server";
 import { ConfigurationBuilder } from "../src/configuration/configuration-builder";
+import { LogType } from "../src/logging/log-type";
+import { InMemoryLogProvider } from "../src/logging/in-memory-log-provider";
 
 describe("Filters", () => {
     ////////////////////////////////////////////////////////////////
@@ -204,21 +206,10 @@ describe("Filters", () => {
         }
 
         protected override configureApplication(): void {
+            this.logger.setLogProvider(new InMemoryLogProvider());
             this.registerControllers([
                 BeforeFilterController,
                 AfterFilterController,
-                /*BreakBeforeGlobalController,
-                BreakBeforeController,
-                BreakBeforeActionController,
-                BreakAfterGlobalController,
-                BreakAfterController,
-                BreakAfterActionController,
-                IgnoreBreakBeforeGlobalController,
-                IgnoreBreakBeforeControllerController,
-                IgnoreBreakBeforeActionController,
-                IgnoreBreakOnActionController,
-                IgnoreBreakOnAfterActionController,
-                IgnoreBreakOnAfterControllerController,*/
                 ThrowOnBeforeGlobalController,
                 ThrowOnBeforeControllerController,
                 ThrowOnBeforeActionController,

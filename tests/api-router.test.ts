@@ -9,6 +9,7 @@ import { Logger } from "../src/logging/logger";
 import { RoutingContext } from "../src/shared/routing-context";
 import { ApiServer } from "../src/api-server";
 import { ConfigurationBuilder } from "../src/configuration/configuration-builder";
+import { InMemoryLogProvider } from "../src/logging/in-memory-log-provider";
 import supertest from "supertest";
 
 describe("API Router", () => {
@@ -191,7 +192,12 @@ describe("API Router", () => {
         }
 
         protected override configureApplication(): void {
+            this.logger.setLogProvider(new InMemoryLogProvider());
             this.registerControllers([RoutingController, EmptyRouteController, EndWithBarController, BooleanParamController]);
+        }
+
+        protected override afterStart(): void {
+            this.logger.info(`Starting server ${this.hostName ?? "localhost"}:${this.port ?? (this.httpServer.address() as any).port}`);
         }
     }
 

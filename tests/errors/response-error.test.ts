@@ -8,6 +8,7 @@ import { HttpContext } from "../../src/shared/http-context";
 import { Controller } from "../../src/decorators/controller";
 import { Action } from "../../src/decorators/action";
 import supertest from "supertest";
+import { InMemoryLogProvider } from "../../src/logging/in-memory-log-provider";
 
 describe("Api Server", () => {
     class AuthenticationError extends ResponseError {
@@ -47,7 +48,7 @@ describe("Api Server", () => {
         }
 
         protected configureApplication(): void {
-            super.configureApplication();
+            this.logger.setLogProvider(new InMemoryLogProvider());
             this.registerController(TestController);
             this.routing.registerGlobalFilter(AuthenticationFilter);
         }

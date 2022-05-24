@@ -71,6 +71,8 @@ export class ApiServer {
     }
 
     public start(): void {
+        this.beforeStart();
+
         // the solution expects body content to be parsed to work
         // because we invoke actions sending body content, route params
         // and query string parameters as arguments to the action.
@@ -87,15 +89,37 @@ export class ApiServer {
 
         // start the server.
         this.listen();
+
+        this.afterStart();
     }
 
     public async stop(): Promise<void> {
+        this.beforeStop();
+
         return new Promise((resolve, reject) => {
             this.httpServer?.close(error => {
+                this.afterStop();
+
                 if (error) reject(error);
                 else resolve();
             });
         });
+    }
+
+    protected beforeStart(): void {
+        // override.
+    }
+
+    protected afterStart(): void {
+        // override.
+    }
+
+    protected beforeStop(): void {
+        // override.
+    }
+
+    protected afterStop(): void {
+        // override.
     }
 
     protected configureApplication(): void {

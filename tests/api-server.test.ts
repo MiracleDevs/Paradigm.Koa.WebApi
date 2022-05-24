@@ -2,6 +2,7 @@ import { ApiServer } from "../src/api-server";
 import { Logger } from "../src/logging/logger";
 import { ConfigurationBuilder } from "../src/configuration/configuration-builder";
 import { DependencyCollection } from "@miracledevs/paradigm-web-di";
+import { InMemoryLogProvider } from "../src/logging/in-memory-log-provider";
 
 describe("Api Server", () => {
     class Controller1 {}
@@ -18,7 +19,7 @@ describe("Api Server", () => {
         }
 
         protected configureApplication(): void {
-            super.configureApplication();
+            this.logger.setLogProvider(new InMemoryLogProvider());
             expect(() => this.registerController(Controller1)).not.toThrowError();
             expect(() => this.registerControllers([Controller2, Controller3])).not.toThrowError();
             expect(this.controllers).toHaveLength(3);

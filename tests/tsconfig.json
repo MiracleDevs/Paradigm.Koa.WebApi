@@ -101,5 +101,5 @@
             "*": ["node_modules/*"]
         }
     },
-    "include": ["./**/*.ts"]
+    "include": ["./**/*.test.ts"]
 }

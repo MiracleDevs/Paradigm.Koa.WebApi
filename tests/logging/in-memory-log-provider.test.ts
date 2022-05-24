@@ -28,14 +28,26 @@ describe("Console Log Provider", () => {
     it("should warn a message", () =>
         expect(() => {
             const consoleProvider = new InMemoryLogProvider();
-            consoleProvider.trace("warn message");
+            consoleProvider.warning("warn message");
             expect(consoleProvider.getMessages()[0]).toBe("warn message");
         }).not.toThrowError());
 
     it("should error a message", () =>
         expect(() => {
             const consoleProvider = new InMemoryLogProvider();
-            consoleProvider.trace("error message");
+            consoleProvider.error("error message");
             expect(consoleProvider.getMessages()[0]).toBe("error message");
         }).not.toThrowError());
+
+    it("should set a limit", () => {
+        const consoleProvider = new InMemoryLogProvider(3);
+        consoleProvider.error("1");
+        consoleProvider.error("2");
+        consoleProvider.error("3");
+        consoleProvider.error("4");
+        expect(consoleProvider.getMessages().length).toBe(3);
+        expect(consoleProvider.getMessages()[0]).toBe("2");
+        expect(consoleProvider.getMessages()[1]).toBe("3");
+        expect(consoleProvider.getMessages()[2]).toBe("4");
+    });
 });

@@ -18,4 +18,12 @@ describe("JSON Configuration Source", () => {
         expect(object.complexArray[0]).toBe("First json array value");
         expect(object.complexArray[1]).toBe("Second json array value");
     });
+
+    it("should fail if file does not exist", async () => {
+        let jsonConfigurationSource = new JsonConfigurationSource("./tests/configuration/non-existing-config.json");
+        await expect(async () => await jsonConfigurationSource.get()).rejects.toThrow();
+
+        jsonConfigurationSource = new JsonConfigurationSource(undefined as any);
+        await expect(async () => await jsonConfigurationSource.get()).rejects.toThrow();
+    });
 });

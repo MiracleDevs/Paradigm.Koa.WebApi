@@ -4,6 +4,8 @@ import { ControllerType } from "../../src/decorators/controller-type";
 describe("Controller Type Collection", () => {
     class Controller {}
 
+    class NotRegistered {}
+
     it("should have a global instance", () => expect(ControllerTypeCollection.globalInstance).not.toBeNull());
 
     it("should allow register and get controller type", () => {
@@ -25,5 +27,9 @@ describe("Controller Type Collection", () => {
 
     it("should return iterator", () => {
         expect(ControllerTypeCollection.globalInstance.getControllers()).not.toBeNull();
+    });
+
+    it("should fail if controller is not registered", () => {
+        expect(() => ControllerTypeCollection.globalInstance.get(NotRegistered)).toThrowError(`The controller NotRegistered is not registered.`);
     });
 });
